@@ -50,8 +50,7 @@ class Display():
 
     def draw(self, x, y, val):
         self.display[x][y] = val
-
-
+        
 class Memory():
 
     FONT_START_ADDRESS = 0x50
@@ -60,10 +59,10 @@ class Memory():
 
     def __init__(self, rom):
 
-        #4096 kb of memory (0x000 - 0x1FF is not used, originally for interpreter)
+        #4096 kb of memory (0x000 - 0x1FF is not used aside from storing the fonts, the rest was originally for the interpreter)
         self.memory = [0] * 4096
 
-        #Set fontset into memory
+        #Load fontset into memory
         self.memory[Memory.FONT_START_ADDRESS : Memory.FONT_END_ADDRESS] = fontset
 
         #Load ROM into memory
@@ -104,23 +103,29 @@ class CHIP_8():
         self.registers = [0] * 16 
 
         self.index_register = 0
-
+        self.sound_timer = 0
+        self.delay_timer = 0
+ 
         #Program Counter
         self.pc = 0x200
 
         #4096 kb of memory
         self.memory = Memory(rom)
 
-        self.memory.debug()
+        """
+        NOTE : Might wanna load the rom after the class initialization
+               or back in main to handle file errors
+        """
+        
+#       self.memory.load(rom)
 
+        # 16 bit values
         self.stack = [0] * 16
 
         self.stack_pointer = 0
 
         self.keypad = [0] * 16
-        self.sound_timer = 0
-        self.delay_timer = 0
-    
+   
         #64 x 32 display
         self.display = Display()
 
@@ -141,37 +146,62 @@ class CHIP_8():
         if self.delay_timer != 0:
             self.delay_timer -= 1
 
-    def fetch_byte(self, addr):
-        return self.memory[addr]
+        if self.sound_timer != 0:
+            self.sound_timer -= 0
+        else:
+            #Add sound tick here later
+            pass
 
-    def fetch_instruction(self, addr):
-        return (self.memory[addr], self.memory[addr+1])
+    def fetch_instruction(self, addr):  
 
+        instr = self.memory[addr] + 0xF + self.memory[addr+1]
 
+        temp = {
+            "full" : instr,
+            "upper_byte" : instr >> 8,
+            "lower_byte" : instr & 0x00FF,
+            "nnn" : (0x0FFF & instr),
+            'w' : (0xF000 & instr) >> 12, 
+            "x" : (0x0F00 & instr) >> 8,
+            "y" : (0x00F0 & instr) >> 4,
+            "n" : (0x000F & instr),
+        }
+
+        return temp        
+        
     def execute(self):
 
-        """
-            Note for me later,
-            split instructions into top and bottom words
-            then match the case from there to determine what the actuak'
-            instruction is to make it easie rto diiferentiate 
-        """
-        #Upper and lower bytes of the instruction split
-        upper,lower = self.fetch_instruction(self.pc)
+        instr = self.fetch_instruction(self.pc)
     
-
-        match upper:
-            case 0x00E0:
-                self.display.clear()
-            case 0x00EE:
-                self.pc = self.stack[-1]
-                self.stack_pointer -= 1
+        match instr['w']:
+            case 0x0:
+                if instr['lower'] == 0xEE:
+                    self.PC = self.stack[-1]
+                    self.stack_pointer -= 1
+                elif lower == 0xE0:
+                    self.display.clear()
+            case 0x1:
+                #JUMP 
+                self.PC = nnn 
+            case 0x2:
+                #CALL
+                self.stack_pointer += 1
+                self.stack[-1] = self.PC
+                self.PC = nnn
+            case 0x3:
+                if one == lower:
+                    self.PC += 2
+            case 0x4:
+                if one != lower:
+                    self.PC += 2
+            case 0x5:
+                if two == three:
+                    self.PC +=2 
+            case = 0x6:
+                pass
             case _:
                 print(f"ERROR: Invalid instruction {byte}")
                 exit()
-
-
-        pass
 
     def debug(self):
         registers = [f"{i}: {val}" for i, val in enumerate(self.registers)]

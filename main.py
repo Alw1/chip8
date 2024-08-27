@@ -9,7 +9,7 @@ args = parser.parse_args()
 if __name__ == '__main__':
  
     chip8 = CHIP_8(args.ROM)
- 
-    # with open(args.source)
-    # print("FUCK")
-  
+    #chip8.memory.loadrom(args.ROM)
+    #chip8.memory.debug()
+    chip8.fetch_instruction(10)
+
