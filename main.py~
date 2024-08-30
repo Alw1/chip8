@@ -10,5 +10,5 @@ if __name__ == '__main__':
  
     chip8 = CHIP_8(args.ROM)
     chip8.memory.loadrom(args.ROM)
-    chip8.memory.debug()
+    chip8.debug()
 

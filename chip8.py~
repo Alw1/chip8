@@ -228,7 +228,7 @@ class CHIP_8():
 #                print(f"ERROR: Invalid instruction {byte}")
 #                exit()
 #
-    def debug(self):
-        registers = [f"{i}: {val}" for i, val in enumerate(self.registers)]
-        print("Registers")
-        print("\n".join(registers))
+#    def debug(self):
+#        registers = [f"{i}: {val}" for i, val in enumerate(self.registers)]
+#        print("Registers")
+#        print("\n".join(registers))
